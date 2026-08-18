@@ -1,0 +1,64 @@
+{
+  "name": "dbsc-server",
+  "version": "0.0.0",
+  "description": "Server-side toolkit for Device Bound Session Credentials (DBSC)",
+  "license": "MIT",
+  "author": "Enda Kelly (https://cloudnua.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CloudNua/dbsc-server.git"
+  },
+  "homepage": "https://github.com/CloudNua/dbsc-server#readme",
+  "bugs": "https://github.com/CloudNua/dbsc-server/issues",
+  "keywords": [
+    "dbsc",
+    "device-bound-session-credentials",
+    "device-bound-sessions",
+    "session",
+    "cookies",
+    "security",
+    "webappsec"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./express": {
+      "types": "./dist/express.d.ts",
+      "default": "./dist/express.js"
+    },
+    "./hono": {
+      "types": "./dist/hono.d.ts",
+      "default": "./dist/hono.js"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "default": "./dist/next.js"
+    },
+    "./elysia": {
+      "types": "./dist/elysia.d.ts",
+      "default": "./dist/elysia.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "check:zero-deps": "node scripts/check-zero-deps.mjs"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
