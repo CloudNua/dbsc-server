@@ -1,0 +1,33 @@
+name: Release
+
+# Manual publish workflow. Runs in dry-run mode until the 1.0.0-rc.1 release task
+# removes the flag. Provenance requires the id-token permission and a public repo
+# at publish time.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm (dry run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run check:zero-deps
+      - run: npm run build
+      - run: npm test
+      - name: Publish (dry run)
+        run: npm publish --provenance --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

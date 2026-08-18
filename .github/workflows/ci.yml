@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Typecheck, lint, package guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run check:zero-deps
+      - run: npm run build
+      - name: Check published package shape
+        run: npx publint
+      - name: Inspect pack contents
+        run: npm pack --dry-run
+
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  bun-smoke:
+    name: Smoke (Bun)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - run: npm ci
+      - run: npm run build
+      - name: Import built entrypoints under Bun
+        run: |
+          bun -e "const m = await import('./dist/index.js'); if (m.PACKAGE_NAME !== 'dbsc-server') process.exit(1);"
+          bun -e "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js');"
+
+  deno-smoke:
+    name: Smoke (Deno)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - run: npm run build
+      - name: Import built entrypoints under Deno
+        run: |
+          deno eval "const m = await import('./dist/index.js'); if (m.PACKAGE_NAME !== 'dbsc-server') Deno.exit(1);"
+          deno eval "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js');"
