@@ -100,7 +100,8 @@ export function parseChallengeHeader(value: string): ParsedChallenge | null {
   const member = list[0];
   if (!member || member.kind !== 'item' || member.item.type !== 'string') return null;
   const parsed: ParsedChallenge = { challenge: member.item.value };
-  if (member.params['id'] !== undefined) parsed.sessionId = member.params['id'];
+  // A valueless `;id` parameter parses as '' — treat empty as absent.
+  if (member.params['id']) parsed.sessionId = member.params['id'];
   return parsed;
 }
 
@@ -125,10 +126,14 @@ function readHeader(
   return null;
 }
 
+/** Upper bound on inbound header values this module will look at. */
+const MAX_HEADER_VALUE_LENGTH = 8192;
+const MAX_SESSION_ID_LENGTH = 1024;
+
 /** Reads the proof JWT from `Secure-Session-Response` (or the legacy name). */
 export function getProofHeader(headers: Headers, opts: InboundHeaderOptions = {}): string | null {
   const value = readHeader(headers, HEADERS.response, LEGACY_HEADERS.response, opts);
-  if (value === null) return null;
+  if (value === null || value.length > MAX_HEADER_VALUE_LENGTH) return null;
   const trimmed = value.trim();
   // A compact JWS: three non-empty base64url sections.
   return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(trimmed) ? trimmed : null;
@@ -137,7 +142,7 @@ export function getProofHeader(headers: Headers, opts: InboundHeaderOptions = {}
 /** Reads the session id from `Sec-Secure-Session-Id` (or the legacy name). */
 export function getSessionIdHeader(headers: Headers, opts: InboundHeaderOptions = {}): string | null {
   const value = readHeader(headers, HEADERS.sessionId, LEGACY_HEADERS.sessionId, opts);
-  if (value === null) return null;
+  if (value === null || value.length > MAX_SESSION_ID_LENGTH) return null;
   // Chrome sends the raw identifier. Tolerate an sf-string form as well.
   const trimmed = value.trim();
   if (trimmed === '') return null;
@@ -165,7 +170,7 @@ export function getSkippedHeader(headers: Headers, opts: InboundHeaderOptions = 
   const item = parseItem(value.trim());
   if (item === null || item.kind !== 'item' || item.item.type !== 'token') return null;
   const parsed: ParsedSkipped = { reason: item.item.value };
-  const sessionId = item.params['session_identifier'] ?? item.params['id'];
-  if (sessionId !== undefined) parsed.sessionId = sessionId;
+  const sessionId = item.params['session_identifier'] || item.params['id'];
+  if (sessionId) parsed.sessionId = sessionId;
   return parsed;
 }

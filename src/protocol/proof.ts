@@ -73,6 +73,13 @@ export type VerifyProofResult =
 
 const fail = (reason: ProofFailureReason): VerifyProofResult => ({ ok: false, reason });
 
+/**
+ * Upper bound on an acceptable proof, in characters. Real proofs are well under
+ * 2 KB (an RS256 proof with a 2048-bit key is ~1.2 KB). The cap keeps attacker
+ * input out of base64/JSON work; most servers cap header sizes anyway.
+ */
+export const MAX_PROOF_LENGTH = 8192;
+
 interface ProofHeader {
   typ?: unknown;
   alg?: unknown;
@@ -81,6 +88,7 @@ interface ProofHeader {
 
 export async function verifyProof(proof: string, opts: VerifyProofOptions): Promise<VerifyProofResult> {
   try {
+    if (proof.length > MAX_PROOF_LENGTH) return fail('malformed');
     const parts = proof.split('.');
     if (parts.length !== 3) return fail('malformed');
     const [h, p, s] = parts as [string, string, string];

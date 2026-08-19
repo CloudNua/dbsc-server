@@ -54,6 +54,13 @@ export function normalizePublicJwk(jwk: UnknownJwk): PublicJwk | null {
     const n = base64urlToBytes(jwk.n);
     const e = base64urlToBytes(jwk.e);
     if (n === null || e === null || e.length === 0) return null;
+    // Reject degenerate public exponents. e must be odd and >= 3: with e = 1 a
+    // "signature" is just the padded digest, so anyone can forge one; even
+    // exponents are not valid RSA. Cap e at 8 bytes to bound verify cost.
+    if (e.length > 8) return null;
+    const eLast = e[e.length - 1]!;
+    if ((eLast & 1) === 0) return null;
+    if (e.length === 1 && eLast < 3) return null;
     // Reject weak moduli. Leading zero bytes do not appear in a canonical encoding,
     // but strip them before measuring so a padded modulus cannot fake its size.
     let firstNonZero = 0;

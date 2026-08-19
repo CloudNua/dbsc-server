@@ -143,13 +143,21 @@ export function createMemoryConsumedStore(opts: { now?: () => number } = {}): Ch
   };
 }
 
-/** Wraps a challenger so every challenge verifies at most once. */
+/**
+ * Wraps a challenger so every challenge verifies at most once.
+ *
+ * INVARIANT: `ttlSec` (how long the store remembers a consumed challenge) must be
+ * at least as long as the challenger's own TTL. If the store forgets sooner than
+ * the challenge expires, the challenge verifies AGAIN after the store entry lapses
+ * and single use is silently defeated. The default retention is one hour, which is
+ * safely above any sane challenge TTL; lower it only in step with the challenger.
+ */
 export function withSingleUse(
   challenger: Challenger,
   store: ChallengeConsumedStore,
   opts: { ttlSec?: number } = {},
 ): Challenger {
-  const ttlSec = opts.ttlSec ?? 60;
+  const ttlSec = opts.ttlSec ?? 3600;
   return {
     issue: (ctx) => challenger.issue(ctx),
     async verify(challenge, ctx) {
