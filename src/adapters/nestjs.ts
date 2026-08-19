@@ -35,6 +35,31 @@ export type NestDbscConfig = DbscHandlersConfig & {
 
 export type NestDbscHandlers = ExpressDbscHandlers;
 
+/**
+ * EXPRESS PLATFORM ONLY. On the Fastify platform, use `dbsc-server/fastify`
+ * inside your controller instead. The handlers verify the response object at
+ * runtime and fail with a clear error rather than misbehave on the wrong
+ * platform.
+ */
 export function dbscNest(config: NestDbscConfig): NestDbscHandlers {
-  return dbscExpress(config);
+  const handlers = dbscExpress(config);
+  const guard = (res: unknown): void => {
+    const shaped = res as { setHeader?: unknown; end?: unknown };
+    if (typeof shaped.setHeader !== 'function' || typeof shaped.end !== 'function') {
+      throw new Error(
+        'dbsc-server/nestjs supports the NestJS Express platform only. ' +
+          'On the Fastify platform, use dbsc-server/fastify in your controller.',
+      );
+    }
+  };
+  return {
+    register: (req, res) => {
+      guard(res);
+      return handlers.register(req, res);
+    },
+    refresh: (req, res) => {
+      guard(res);
+      return handlers.refresh(req, res);
+    },
+  };
 }

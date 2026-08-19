@@ -33,19 +33,31 @@ export interface DbscSessionStore {
   create(session: StoredDbscSession): Promise<void>;
   /** Returns the session or null. Returning an expired session is fine; flows check. */
   get(id: string): Promise<StoredDbscSession | null>;
-  /** Applies a partial update to an existing session. Unknown id: no-op. */
-  update(id: string, patch: Partial<Pick<StoredDbscSession, 'expiresAt' | 'ref'>>): Promise<void>;
+  /**
+   * Optional. The library itself never calls this; it exists for applications
+   * that rotate `ref` (for example when the linked app session token changes)
+   * or extend `expiresAt`. Unknown id: no-op.
+   */
+  update?(id: string, patch: Partial<Pick<StoredDbscSession, 'expiresAt' | 'ref'>>): Promise<void>;
   /** Deletes the session. Unknown id: no-op. */
   delete(id: string): Promise<void>;
 }
 
-/** In-memory store for tests, demos, and single-instance servers. Not durable. */
+/**
+ * In-memory store for tests, demos, and single-instance servers with SMALL
+ * session counts. Not durable, and the expiry sweep walks every session.
+ * Use a database-backed store for anything at scale.
+ */
 export function createMemoryStore(opts: { now?: () => number } = {}): DbscSessionStore {
   const now = opts.now ?? Date.now;
   const sessions = new Map<string, StoredDbscSession>();
 
+  // Sweep at most once per minute; per-id expiry is enforced in get().
+  let lastSweep = 0;
   const sweep = (): void => {
     const t = now();
+    if (t - lastSweep < 60_000) return;
+    lastSweep = t;
     for (const [id, session] of sessions) if (session.expiresAt <= t) sessions.delete(id);
   };
 
@@ -57,7 +69,12 @@ export function createMemoryStore(opts: { now?: () => number } = {}): DbscSessio
     async get(id) {
       sweep();
       const session = sessions.get(id);
-      return session ? { ...session } : null;
+      if (session === undefined) return null;
+      if (session.expiresAt <= now()) {
+        sessions.delete(id);
+        return null;
+      }
+      return { ...session };
     },
     async update(id, patch) {
       const session = sessions.get(id);

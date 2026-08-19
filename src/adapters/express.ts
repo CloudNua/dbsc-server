@@ -38,8 +38,27 @@ export interface ExpressDbscHandlers {
 export function dbscExpress(config: ExpressDbscConfig): ExpressDbscHandlers {
   const handlers = createDbscHandlers(config);
   const origin = config.origin ?? 'http://localhost';
+
+  // Express 4 does not catch rejected async handlers, and an unhandled
+  // rejection ends the Node process by default. A store outage or a malformed
+  // URL must become a 500 (retryable for the browser), never a crash.
+  const safely =
+    (handle: (request: Request) => Promise<Response>) =>
+    async (req: NodeRequestLike, res: NodeResponseLike): Promise<void> => {
+      try {
+        await sendWhatwgResponse(res, await handle(toWhatwgRequest(req, origin)));
+      } catch {
+        try {
+          res.statusCode = 500;
+          res.end();
+        } catch {
+          // The response is already committed or the socket is gone.
+        }
+      }
+    };
+
   return {
-    register: async (req, res) => sendWhatwgResponse(res, await handlers.register(toWhatwgRequest(req, origin))),
-    refresh: async (req, res) => sendWhatwgResponse(res, await handlers.refresh(toWhatwgRequest(req, origin))),
+    register: safely(handlers.register),
+    refresh: safely(handlers.refresh),
   };
 }

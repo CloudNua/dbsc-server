@@ -36,7 +36,7 @@ import {
   type ParsedSkipped,
 } from './protocol/headers.js';
 import { verifyProof, type ProofFailureReason, type ProofPayload } from './protocol/proof.js';
-import type { PublicJwk } from './protocol/jwk.js';
+import { importVerifyKey, type PublicJwk } from './protocol/jwk.js';
 import {
   buildSessionConfigResponse,
   buildTerminationResponse,
@@ -70,6 +70,14 @@ export interface DbscOptions {
   clockSkewSec?: number;
   /** Receives deployment-invariant warnings. Default: console.warn. */
   onWarning?: (warning: DeploymentWarning) => void;
+  /**
+   * When to run the deployment-invariant checks on session config responses.
+   * 'once' (default): check each distinct configuration shape one time, then
+   * skip: the inputs are static per deployment and the refresh path is hot.
+   * 'always': check every response (debug mode; can repeat warnings near the
+   * end of a session's life). 'off': never check.
+   */
+  checkInvariants?: 'once' | 'always' | 'off';
   /** Session id factory. Default: crypto.randomUUID. */
   generateSessionId?: () => string;
   /** Clock override for tests. Milliseconds since the epoch. */
@@ -143,6 +151,47 @@ export function createDbsc(options: DbscOptions): Dbsc {
   const now = options.now ?? Date.now;
 
   const badRequest = (): Response => new Response(null, { status: 400 });
+
+  // 'once' invariant-check memo: one entry per distinct config shape (cookie
+  // VALUES are stripped so per-session cookies share a shape). Bounded.
+  const checkMode = options.checkInvariants ?? 'once';
+  const checkedShapes = new Set<string>();
+  const shouldCheck = (init: SessionConfigInit): boolean => {
+    if (checkMode === 'off') return false;
+    if (checkMode === 'always') return true;
+    const shape = JSON.stringify([
+      init.credentials,
+      init.scope,
+      (init.setCookies ?? []).map((c) => {
+        const eq = c.indexOf('=');
+        const semi = c.indexOf(';');
+        return `${eq === -1 ? c : c.slice(0, eq)}${semi === -1 ? '' : c.slice(semi)}`;
+      }),
+    ]);
+    if (checkedShapes.has(shape)) return false;
+    if (checkedShapes.size >= 100) checkedShapes.clear();
+    checkedShapes.add(shape);
+    return true;
+  };
+
+  // Bounded FIFO cache of imported verification keys, keyed by the session's
+  // stored kid. Avoids a crypto.subtle.importKey on every refresh.
+  const verifyKeyCache = new Map<string, CryptoKey>();
+  const cachedVerifyKey =
+    (kid: string) =>
+    async (jwk: Parameters<typeof importVerifyKey>[0]): Promise<CryptoKey | null> => {
+      const cached = verifyKeyCache.get(kid);
+      if (cached !== undefined) return cached;
+      const key = await importVerifyKey(jwk);
+      if (key !== null) {
+        if (verifyKeyCache.size >= 1000) {
+          const oldest = verifyKeyCache.keys().next().value;
+          if (oldest !== undefined) verifyKeyCache.delete(oldest);
+        }
+        verifyKeyCache.set(kid, key);
+      }
+      return key;
+    };
 
   /** The `aud` to expect for a request, or undefined when aud checking is off. */
   const expectedAudienceFor = (request: Request): string | undefined => {
@@ -230,6 +279,7 @@ export function createDbsc(options: DbscOptions): Dbsc {
         storedJwk: session.publicJwk as PublicJwk,
         ...(options.algorithms !== undefined ? { algorithms: options.algorithms } : {}),
         verifyChallenge: (jti) => challenger.verify(jti, { purpose: 'refresh', sessionId }),
+        getVerifyKey: cachedVerifyKey(session.kid),
         ...(expectedAudience !== undefined ? { expectedAudience } : {}),
         expectedSub: sessionId,
         ...(options.clockSkewSec !== undefined ? { clockSkewSec: options.clockSkewSec } : {}),
@@ -262,7 +312,7 @@ export function createDbsc(options: DbscOptions): Dbsc {
         ...(init.status !== undefined ? { status: init.status } : {}),
       };
       if (config.sessionId === '') throw new Error('sessionConfigResponse needs a session or sessionId');
-      return buildSessionConfigResponse(config, onWarning);
+      return buildSessionConfigResponse(config, shouldCheck(config) ? onWarning : undefined);
     },
 
     async terminate(sessionId) {

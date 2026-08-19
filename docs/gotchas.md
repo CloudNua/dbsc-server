@@ -3,6 +3,8 @@
 DBSC has several failure modes that look green and do nothing, plus normal
 behavior that looks like an error. This page lists them. The package detects
 the configuration mistakes at runtime and reports them through `onWarning`.
+By default each distinct configuration shape is checked once per process; set
+`checkInvariants: 'always'` while debugging, or `'off'` to disable.
 
 ## Deployments that silently do nothing
 

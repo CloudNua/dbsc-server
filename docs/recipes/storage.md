@@ -1,7 +1,7 @@
 # Storage recipes
 
 The package ships only an in-memory store, for tests and demos. In production
-you implement the four-method `DbscSessionStore` interface over your own
+you implement the `DbscSessionStore` interface (three required methods; `update` is optional) over your own
 database. These examples are code to copy and adapt, not shipped modules.
 
 The store holds no secrets: session ids, public keys, and timestamps only.

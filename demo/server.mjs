@@ -22,6 +22,8 @@ const COOKIE_MAX_AGE_SEC = 30; // short on purpose, so refresh happens quickly
 
 // App state: cookie value -> user. A real app has its own session system.
 const appSessions = new Map();
+// App session -> DBSC session id, so sign-out can terminate the binding.
+const dbscSessionByApp = new Map();
 
 const dbsc = createDbsc({
   store: createMemoryStore(),
@@ -64,6 +66,24 @@ const page = (title, body) =>
   });
 
 createServer(async (req, res) => {
+  try {
+    await handle(req, res);
+  } catch (error) {
+    // Never let a handler error become an unhandled rejection (which would end
+    // the process). 500 is retryable for the browser; 4xx would end sessions.
+    console.error('request failed:', error);
+    try {
+      res.statusCode = 500;
+      res.end();
+    } catch {
+      // Response already committed.
+    }
+  }
+}).listen(PORT, () => {
+  console.log(`demo on http://localhost:${PORT} — see docs/chrome-testing.md for Chrome flags`);
+});
+
+async function handle(req, res) {
   const request = toRequest(req);
   const url = new URL(request.url);
 
@@ -83,6 +103,7 @@ createServer(async (req, res) => {
     const appSession = cookieValue(req);
     const result = await dbsc.handleRegistration(request, appSession ? { ref: appSession } : {});
     if (!result.ok) return send(res, result.response);
+    if (appSession) dbscSessionByApp.set(appSession, result.session.id);
     console.log(`registered dbsc session ${result.session.id} (device ${result.session.kid.slice(0, 8)}…)`);
     return send(
       res,
@@ -112,12 +133,20 @@ createServer(async (req, res) => {
     );
   }
 
-  // Sign out: end the app session and tell the browser to drop the DBSC session.
+  // Sign out: end the app session AND the DBSC session. The browser learns on
+  // its next refresh (the unknown session gets a terminate response) and then
+  // deletes its device key for this session.
   if (url.pathname === '/logout') {
     const appSession = cookieValue(req);
-    if (appSession) appSessions.delete(appSession);
-    // A real app looks up the DBSC session id bound to this user; the demo store
-    // is small enough that termination on next refresh (unknown ref) suffices.
+    if (appSession) {
+      appSessions.delete(appSession);
+      const dbscSessionId = dbscSessionByApp.get(appSession);
+      if (dbscSessionId) {
+        dbscSessionByApp.delete(appSession);
+        await dbsc.terminate(dbscSessionId);
+        console.log(`terminated dbsc session ${dbscSessionId}`);
+      }
+    }
     return send(res, page('Signed out', '<a href="/">home</a>'));
   }
 
@@ -133,6 +162,4 @@ createServer(async (req, res) => {
   }
 
   return send(res, page('dbsc-server demo', '<a href="/login">sign in</a>'));
-}).listen(PORT, () => {
-  console.log(`demo on http://localhost:${PORT} — see docs/chrome-testing.md for Chrome flags`);
-});
+}

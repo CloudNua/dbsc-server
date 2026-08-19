@@ -45,6 +45,13 @@ export type VerifyProofOptions = {
   clockSkewSec?: number;
   /** Clock override for tests. Milliseconds since the epoch. */
   now?: () => number;
+  /**
+   * Resolves the WebCrypto verification key for a normalized public JWK.
+   * Default: import on every call. Callers with a stable key (refresh flows)
+   * can supply a cached resolver. The resolver receives the ALREADY NORMALIZED
+   * key; returning a key for a different JWK breaks verification soundness.
+   */
+  getVerifyKey?: (jwk: PublicJwk) => Promise<CryptoKey | null>;
 } & (
   | { mode: 'registration' }
   | { mode: 'refresh'; storedJwk: PublicJwk }
@@ -129,7 +136,7 @@ export async function verifyProof(proof: string, opts: VerifyProofOptions): Prom
     const sig = base64urlToBytes(s);
     if (sig === null || sig.length === 0) return fail('malformed');
     if (jwk.kty === 'EC' && sig.length !== 64) return fail('bad-signature'); // P1363 r||s only
-    const key = await importVerifyKey(jwk);
+    const key = await (opts.getVerifyKey ?? importVerifyKey)(jwk);
     if (key === null) return fail('jwk-invalid');
     const verifyAlgorithm =
       jwk.kty === 'EC' ? ({ name: 'ECDSA', hash: 'SHA-256' } as const) : ('RSASSA-PKCS1-v1_5' as const);
