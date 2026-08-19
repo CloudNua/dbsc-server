@@ -81,6 +81,8 @@ one file.
 | Hono | `dbsc-server/hono` | [recipe](./docs/recipes/hono.md) |
 | Next.js (App Router) | `dbsc-server/next` | [recipe](./docs/recipes/next.md) |
 | Elysia | `dbsc-server/elysia` | [recipe](./docs/recipes/elysia.md) |
+| Fastify | `dbsc-server/fastify` | [recipe](./docs/recipes/fastify.md) |
+| NestJS | `dbsc-server/nestjs` | [recipe](./docs/recipes/nestjs.md) |
 | Auth.js | core | [recipe](./docs/recipes/authjs.md) |
 
 The adapters are thin shims over one WHATWG handler layer. The package imports
