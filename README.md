@@ -88,16 +88,16 @@ no framework code.
 
 ## Documentation
 
-- [Security model](./docs/security-model.md) — what DBSC protects, what it does
+- [Security model](./docs/security-model.md): what DBSC protects, what it does
   not, and the design decisions in this package.
-- [Protocol gotchas](./docs/gotchas.md) — the deployment mistakes that make
+- [Protocol gotchas](./docs/gotchas.md): the deployment mistakes that make
   DBSC silently do nothing, and how this package flags them.
-- [Browser support](./docs/browser-support.md) — where DBSC works today and how
+- [Browser support](./docs/browser-support.md): where DBSC works today and how
   to degrade gracefully.
-- [Test with real Chrome](./docs/chrome-testing.md) — no TPM required.
-- [Interoperability](./docs/interop.md) — shared test vectors with other
+- [Test with real Chrome](./docs/chrome-testing.md): no TPM required.
+- [Interoperability](./docs/interop.md): shared test vectors with other
   implementations.
-- [Storage recipes](./docs/recipes/storage.md) — Postgres/Drizzle and Redis
+- [Storage recipes](./docs/recipes/storage.md): Postgres/Drizzle and Redis
   store implementations to copy.
 
 ## Spec version

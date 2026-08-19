@@ -40,11 +40,11 @@ Open `http://localhost:8080` and click **sign in**.
 
 Chrome has no DevTools panel for DBSC yet. Use these instead:
 
-- `chrome://net-export` — record a network log, then load it in
+- `chrome://net-export`: record a network log, then load it in
   `https://netlog-viewer.appspot.com`. Search for `device_bound` events.
-- `chrome://histograms/#Net.DeviceBoundSessions` — counters for registration,
+- `chrome://histograms/#Net.DeviceBoundSessions`: counters for registration,
   refresh, and errors.
-- The demo server log — it prints registration, refresh, and skip events.
+- The demo server log: it prints registration, refresh, and skip events.
 
 ## 5. Known behavior notes
 
