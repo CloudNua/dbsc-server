@@ -15,6 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Check commit identities
+        # Every commit must use the public no-reply identity. This guard exists
+        # because a local git config once leaked a private email into history.
+        run: |
+          BAD=$(git log --format='%ae%n%ce' | sort -u | grep -v '^38502722+enda-kelly@users.noreply.github.com$' || true)
+          if [ -n "$BAD" ]; then
+            echo "unexpected commit identity found:"; echo "$BAD"; exit 1
+          fi
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
