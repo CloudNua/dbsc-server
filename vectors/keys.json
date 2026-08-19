@@ -1,0 +1,38 @@
+{
+  "comment": "TEST KEYS ONLY. Committed so other implementations can cross-check. Never use for anything real.",
+  "ec": {
+    "public": {
+      "kty": "EC",
+      "x": "KenIWViYm22soNf1zLRfB04Fyxw3Xl0np26UO6Ens0A",
+      "y": "Eg19f-H-jHH2KQdRiO2x8e51niz1Zbqr4CFYD2VM5oo",
+      "crv": "P-256"
+    },
+    "private": {
+      "kty": "EC",
+      "x": "KenIWViYm22soNf1zLRfB04Fyxw3Xl0np26UO6Ens0A",
+      "y": "Eg19f-H-jHH2KQdRiO2x8e51niz1Zbqr4CFYD2VM5oo",
+      "crv": "P-256",
+      "d": "x56X0horQKuHhRq11r1tsePF-B99-iQlT69mTk_tZA8"
+    }
+  },
+  "rsa": {
+    "public": {
+      "alg": "RS256",
+      "kty": "RSA",
+      "n": "oX5CxezRiZd-bipdkXPV7A8akle5CPaSyyeFUCMCJDJbEZ2EECbXVi9imqM-4Wha6g_cU70od1F6l8xyXh3Y5fST4f_2UogH5hh2I4pE6dBsVEzUptmPlNGuE6scTh9yZnC8zieeMbftjkEf-XPE2u4T7IhaTCRxkF-C09N6PPNxPDbJJzVue0iEMus2UZdeRF76w-RVjRqTmP1YKbl8WdYkZgXGo1C0pT0Shhb7fRoafn1Y8uXSZEU8pGTXZfQW6m9LEBUVj_h4c0aDRBK6Q4PV_OFwdXj8wJTcItuumkbZeACQ92nq2JmUELZmLC0HiJ5bieKlprbIJI8fCodffQ",
+      "e": "AQAB"
+    },
+    "private": {
+      "alg": "RS256",
+      "kty": "RSA",
+      "n": "oX5CxezRiZd-bipdkXPV7A8akle5CPaSyyeFUCMCJDJbEZ2EECbXVi9imqM-4Wha6g_cU70od1F6l8xyXh3Y5fST4f_2UogH5hh2I4pE6dBsVEzUptmPlNGuE6scTh9yZnC8zieeMbftjkEf-XPE2u4T7IhaTCRxkF-C09N6PPNxPDbJJzVue0iEMus2UZdeRF76w-RVjRqTmP1YKbl8WdYkZgXGo1C0pT0Shhb7fRoafn1Y8uXSZEU8pGTXZfQW6m9LEBUVj_h4c0aDRBK6Q4PV_OFwdXj8wJTcItuumkbZeACQ92nq2JmUELZmLC0HiJ5bieKlprbIJI8fCodffQ",
+      "e": "AQAB",
+      "d": "FJQBMDVYEf9S5fjSCXnINZdLHIC_HExHMknr6-U6HaCpCBqZPHGmmN3a47ePiKuCgjbZLXZ6FJI2W-d6X1HQVKUQvwidu7CHySMu0qKI235qf2d25XftmtoJI4p3ReEt863D8UUNHGrCg5D64Q-GcxtJQKezUeaG7g2tnw5gkimDGnvfdJDdSWMp0tZiSjtRZSWQApndbbulUX0207pUtDLQzKzNgMe4YLdfHjwhz59S_HGIfoQvJzpIDG3LOwg882JOQPRy7iWIofMT9L5WBzsPrk2A87ONiUdLo_s6f_oAkWUeWLe-mwF2Enzo2aRAnl0IvkEM1ad0Oz9pPUeHRQ",
+      "p": "4TNWWxv-LitA3UqtWaF_S201DwIoSRIZygLCGTDs8PHwsceJOpW2lcnh_d5Bvv__At8yXcDZrm7PFtznT_vO9QZ87JpTzH9BYet3BclR7Jn3ZN-dwklq_g4qoD3pW6mHjIFgDgInWMwbq_K26iNBE-c-tV86lfh9emDzhmRB99M",
+      "q": "t5RrRK0_mAofZzTADMwf7sakWivOAv1gZhtxGN6ViUZAdme_tO3WKzpk3V2zk19dx2e655MkRq2ndoiPePtAYp1e_aS6RNjoqfdfesmO520AkNTCdjCTfX3BPEDyP3fb8kYQUXxicRoxTCVi60PWZKrLnN6L4vbGgRb4QF9fiW8",
+      "dp": "1HSeT64FCoF73EmLaTfW483PdK1QXD9bXR1lCGcD4fweW1onuMFtU7r2HY8E77CLYKY42gIKW2nmrWcSQn8JLFhGmuCtlguoHz0JOMhJJbHLl7rvFlA1RCERTcOa2AMEAiY7_HtDq55DrOB6eEFyL9jFbE6-8qVPm5jDplIHekk",
+      "dq": "TOw26mcB365WLEOxOWuK8d1wXow-XYhYDVDwWfBijkvOlQ6yCJkkBacJPqyVo2nxfK2dZo2ERM1c_1EHdTUqbGfutq-AkXqmOxn5exTb-WL2Orm75hRCqPG5t4qrNyb9FY6AJfTNtwC3qWV9BoG9Yx8iBFBII0kuMkcyrJ6KBKc",
+      "qi": "QFKx7FQYiODfNL1sTv0VbFJ1IeSX45NLoWRlzHl-bPPJwSS6sA3eFnUFB3gnECaDfYLI-WoamYRm8DCwcr9VfJJ2GOKxCfE1CEhE5UnrP04rvT7APMg6k4sgYFIbMsBpIdhm0svVMjwdT6bAbys6ClEBlylARdVPt3m_wWsAOd8"
+    }
+  }
+}

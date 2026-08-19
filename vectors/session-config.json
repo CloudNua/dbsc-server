@@ -1,0 +1,57 @@
+{
+  "comment": "Session configuration JSON building vectors.",
+  "cases": [
+    {
+      "name": "full-shape",
+      "init": {
+        "sessionId": "s-1",
+        "refreshUrl": "/dbsc/refresh",
+        "scope": {
+          "includeSite": true,
+          "specification": [
+            {
+              "type": "exclude",
+              "domain": "*.example.com",
+              "path": "/static"
+            }
+          ]
+        },
+        "credentials": [
+          {
+            "name": "session",
+            "attributes": "Path=/; Secure; HttpOnly; SameSite=Lax"
+          }
+        ]
+      },
+      "body": {
+        "session_identifier": "s-1",
+        "refresh_url": "/dbsc/refresh",
+        "scope": {
+          "include_site": true,
+          "scope_specification": [
+            {
+              "type": "exclude",
+              "domain": "*.example.com",
+              "path": "/static"
+            }
+          ]
+        },
+        "credentials": [
+          {
+            "type": "cookie",
+            "name": "session",
+            "attributes": "Path=/; Secure; HttpOnly; SameSite=Lax"
+          }
+        ]
+      }
+    },
+    {
+      "name": "termination-body",
+      "terminate": "s-1",
+      "body": {
+        "session_identifier": "s-1",
+        "continue": false
+      }
+    }
+  ]
+}

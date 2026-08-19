@@ -1,0 +1,96 @@
+{
+  "comment": "DBSC header parse vectors. parse=null means the value must be rejected. Names use the second-origin-trial (current) forms.",
+  "registration": [
+    {
+      "name": "documented-shape",
+      "value": "(ES256 RS256);path=\"/dbsc/register\";challenge=\"cv\";authorization=\"ac\"",
+      "parsed": {
+        "algorithms": [
+          "ES256",
+          "RS256"
+        ],
+        "path": "/dbsc/register",
+        "challenge": "cv",
+        "authorization": "ac"
+      }
+    },
+    {
+      "name": "unknown-alg-and-federated-params-ignored",
+      "value": "(ES256 ES512);path=\"/r\";challenge=\"c\";provider_url=\"https://idp.example\"",
+      "parsed": {
+        "algorithms": [
+          "ES256"
+        ],
+        "path": "/r",
+        "challenge": "c"
+      }
+    },
+    {
+      "name": "missing-path",
+      "value": "(ES256);challenge=\"c\"",
+      "parsed": null
+    },
+    {
+      "name": "no-known-algs",
+      "value": "(ES512);path=\"/r\";challenge=\"c\"",
+      "parsed": null
+    },
+    {
+      "name": "unterminated-list",
+      "value": "(ES256;path=\"/r\";challenge=\"c\"",
+      "parsed": null
+    }
+  ],
+  "challenge": [
+    {
+      "name": "refresh-challenge",
+      "value": "\"cv\";id=\"s-1\"",
+      "parsed": {
+        "challenge": "cv",
+        "sessionId": "s-1"
+      }
+    },
+    {
+      "name": "registration-challenge",
+      "value": "\"cv\"",
+      "parsed": {
+        "challenge": "cv"
+      }
+    },
+    {
+      "name": "escaped-string",
+      "value": "\"a\\\"b\\\\c\";id=\"s-1\"",
+      "parsed": {
+        "challenge": "a\"b\\c",
+        "sessionId": "s-1"
+      }
+    },
+    {
+      "name": "token-not-string",
+      "value": "cv;id=\"s-1\"",
+      "parsed": null
+    }
+  ],
+  "skipped": [
+    {
+      "name": "quota-exceeded",
+      "value": "quota_exceeded;session_identifier=\"123\"",
+      "parsed": {
+        "reason": "quota_exceeded",
+        "sessionId": "123"
+      }
+    },
+    {
+      "name": "unknown-reason-ok",
+      "value": "some_future_reason",
+      "parsed": {
+        "reason": "some_future_reason"
+      }
+    },
+    {
+      "name": "string-not-token",
+      "value": "\"unreachable\"",
+      "parsed": null
+    }
+  ]
+}
