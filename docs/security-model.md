@@ -56,6 +56,37 @@ The key cannot leave the device. The result:
 5. **Use an external session store in production.** The in-memory store is for
    tests and demos.
 
+## Post-quantum readiness
+
+This package uses classical signatures (ES256, RS256) because the DBSC
+ecosystem does. This is a deliberate position:
+
+- **The urgent quantum risk does not apply here.** "Harvest now, decrypt
+  later" threatens recorded *encrypted* data. DBSC proofs are authentication,
+  not encryption. A recorded proof is useless later: its challenge expires in
+  about a minute, and its session expires in days. A quantum attack on DBSC
+  requires a cryptographically relevant quantum computer at the time of the
+  attack, against a session that is still alive. Short-lived authentication
+  signatures are the last category on the NIST migration timeline. The layer
+  that does face harvest-now risk is TLS, and browsers already ship
+  post-quantum key exchange there.
+- **The server cannot move first.** The browser generates the device key in
+  the TPM or the Secure Enclave. The server only advertises which algorithms
+  it accepts. Today no shipping browser, secure-hardware firmware, or DBSC
+  specification supports a post-quantum signature algorithm, so a server that
+  advertised one would negotiate with no client.
+- **This package is ready to follow.** The algorithm list is one data table.
+  The key type pins the algorithm. Key normalization is per key type.
+  Verification goes through Web Crypto, so the package inherits ML-DSA when
+  the runtimes ship it, still with zero dependencies. When the DBSC ecosystem
+  adds a post-quantum algorithm, support here is a minor release.
+- **The symmetric parts need no change.** HMAC-SHA-256 challenges and SHA-256
+  thumbprints remain secure against quantum attack per NIST guidance.
+
+The watch items that trigger a change: the IETF registrations of ML-DSA for JOSE, the
+Web Cryptography post-quantum algorithm work, post-quantum TPM support, and
+the DBSC specification's algorithm list.
+
 ## Audit status
 
 This package has not had a third-party security audit. The verifier has an
