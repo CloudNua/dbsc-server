@@ -9,6 +9,34 @@
 /** The npm package name. Used in diagnostics. */
 export const PACKAGE_NAME = 'dbsc-server';
 
+export { createDbsc } from './flows.js';
+export type {
+  Dbsc,
+  DbscOptions,
+  RefreshOutcome,
+  RegistrationFailure,
+  RegistrationResult,
+  RegistrationSuccess,
+  SessionConfigResponseInit,
+} from './flows.js';
+
+export { createMemoryStore } from './store.js';
+export type { DbscSessionStore, StoredDbscSession } from './store.js';
+
+export {
+  buildSessionConfigBody,
+  buildSessionConfigResponse,
+  buildTerminationResponse,
+  checkDeploymentInvariants,
+} from './session-config.js';
+export type {
+  CookieCredential,
+  DeploymentWarning,
+  SessionConfigBody,
+  SessionConfigInit,
+  SessionScopeInit,
+} from './session-config.js';
+
 export {
   ALGORITHMS,
   HEADERS,
