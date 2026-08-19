@@ -7,6 +7,8 @@ export default defineConfig({
     hono: 'src/adapters/hono.ts',
     next: 'src/adapters/next.ts',
     elysia: 'src/adapters/elysia.ts',
+    fastify: 'src/adapters/fastify.ts',
+    nestjs: 'src/adapters/nestjs.ts',
   },
   format: ['esm'],
   dts: true,

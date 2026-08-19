@@ -70,7 +70,7 @@ jobs:
       - name: Import built entrypoints under Bun
         run: |
           bun -e "const m = await import('./dist/index.js'); if (m.PACKAGE_NAME !== 'dbsc-server') process.exit(1);"
-          bun -e "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js');"
+          bun -e "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js'); await import('./dist/fastify.js'); await import('./dist/nestjs.js');"
 
   deno-smoke:
     name: Smoke (Deno)
@@ -89,4 +89,4 @@ jobs:
       - name: Import built entrypoints under Deno
         run: |
           deno eval "const m = await import('./dist/index.js'); if (m.PACKAGE_NAME !== 'dbsc-server') Deno.exit(1);"
-          deno eval "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js');"
+          deno eval "await import('./dist/express.js'); await import('./dist/hono.js'); await import('./dist/next.js'); await import('./dist/elysia.js'); await import('./dist/fastify.js'); await import('./dist/nestjs.js');"
