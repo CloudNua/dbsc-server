@@ -9,6 +9,9 @@
 /** The npm package name. Used in diagnostics. */
 export const PACKAGE_NAME = 'dbsc-server';
 
+export { createDbscHandlers } from './handlers.js';
+export type { DbscHandlers, DbscHandlersConfig, SessionBinding } from './handlers.js';
+
 export { createDbsc } from './flows.js';
 export type {
   Dbsc,

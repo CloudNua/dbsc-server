@@ -1,7 +1,21 @@
 /**
- * dbsc-server/next — Next.js route-handler adapter.
+ * dbsc-server/next — Next.js App Router route-handler adapter.
  *
- * Reserved subpath. The adapter is implemented in a later version. Importing this
- * module is safe; it exports nothing yet.
+ * Next route handlers already receive a WHATWG Request (NextRequest extends
+ * Request) and return a Response, so the handlers pass through directly.
+ *
+ *   // app/dbsc/register/route.ts
+ *   export const POST = dbscNext({ dbsc, bindSession }).register;
+ *
+ *   // app/dbsc/refresh/route.ts
+ *   export const POST = dbscNext({ dbsc, bindSession }).refresh;
+ *
+ * Build ONE shared config module and import it from both route files, so both
+ * endpoints use the same `Dbsc` instance and store.
  */
-export {};
+
+import { createDbscHandlers, type DbscHandlers, type DbscHandlersConfig } from '../handlers.js';
+
+export function dbscNext(config: DbscHandlersConfig): DbscHandlers {
+  return createDbscHandlers(config);
+}

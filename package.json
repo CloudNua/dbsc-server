@@ -58,7 +58,11 @@
     "lint": "oxlint src tests scripts"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
+    "elysia": "^1.4.29",
+    "express": "^5.2.1",
+    "hono": "^4.13.3",
     "oxlint": "^1.79.0",
     "publint": "^0.3.23",
     "tsup": "^8.5.1",
