@@ -1,5 +1,8 @@
 # Test with real Chrome
 
+> Last validated: 2026-08-19, Chrome on Linux with software keys. Registration
+> and repeated silent refresh both worked against the demo server.
+
 You do not need a TPM to test DBSC. Chrome can use software keys for manual
 testing. This page shows how to run the demo against a real Chrome.
 
