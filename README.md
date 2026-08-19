@@ -1,40 +1,120 @@
 # dbsc-server
 
-A server-side toolkit for Device Bound Session Credentials (DBSC).
+Server-side toolkit for Device Bound Session Credentials (DBSC).
 
-> **Status: in development.** This package is not ready for use. Do not install it yet.
+[![CI](https://github.com/CloudNua/dbsc-server/actions/workflows/ci.yml/badge.svg)](https://github.com/CloudNua/dbsc-server/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+![Types](https://img.shields.io/badge/types-included-blue)
+![Runtime dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
-## What DBSC does
+> **Status: pre-release.** The API can change until 1.0.0. Validated against
+> real Chrome and against the shared cross-implementation test vectors.
 
-DBSC is a web standard from the W3C WebAppSec working group. The browser creates a
-private key in secure hardware on the device. The key cannot leave the device. The
-browser signs a server challenge with this key at short intervals. The server checks the
-signature and issues a fresh, short-lived session cookie.
+## Why
 
-If an attacker steals the cookie, the cookie expires in minutes. The attacker cannot
-refresh it on a different device, because the attacker does not have the device key.
-This defeats session theft by infostealer malware.
+Infostealer malware steals session cookies and replays them from another
+machine. TLS, MFA, and passkeys do not stop this: the attacker skips sign-in
+completely and uses the stolen session.
 
-## What this package does
+DBSC closes this gap. The browser creates a private key in secure hardware.
+The key cannot leave the device. Your server hands out only short-lived
+cookies. When a cookie expires, the browser proves possession of the device
+key and gets a fresh cookie. A stolen cookie dies in minutes, and the thief
+cannot refresh it, because the thief does not have the device key.
 
-`dbsc-server` implements the server side of the DBSC protocol:
+`dbsc-server` implements the server side of this protocol: the headers, the
+challenges, the proof verification, and the refresh state machine. You keep
+your own session system and your own cookies. Zero runtime dependencies.
+Runs on Node.js, Bun, and Deno.
 
-- It builds and parses the DBSC protocol headers.
-- It issues and validates registration and refresh challenges.
-- It validates the signed proofs from the browser.
-- It tells your application when to issue a new session cookie.
+## How it works
 
-You keep control of your sessions and your cookies. The package has no runtime
-dependencies. It runs on Node.js, Bun, and Deno.
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant S as Your server
+    B->>S: POST /login
+    S->>B: Set-Cookie (short-lived) + Secure-Session-Registration
+    Note over B: generates a hardware-bound key
+    B->>S: POST /dbsc/register (signed proof + public key)
+    S->>B: 200 session config + Set-Cookie
+    Note over B: ...cookie expires...
+    B->>S: POST /dbsc/refresh (session id)
+    S->>B: 403 + Secure-Session-Challenge
+    B->>S: POST /dbsc/refresh (signed challenge)
+    S->>B: 200 session config + fresh Set-Cookie
+```
 
 ## Install
 
-Not published yet.
+```sh
+npm install dbsc-server
+```
+
+## Quickstart
+
+```js
+import { createDbsc, createDbscHandlers, createMemoryStore } from 'dbsc-server';
+
+const dbsc = createDbsc({ store: createMemoryStore(), challenge: { secret: process.env.DBSC_SECRET } });
+const { register, refresh } = createDbscHandlers({
+  dbsc,
+  bindSession: () => ({
+    scope: { includeSite: false },
+    credentials: [{ name: 'session', attributes: 'Path=/; Secure; HttpOnly; SameSite=Lax' }],
+    setCookies: [mintYourSessionCookie()], // short Max-Age; DBSC refreshes it
+  }),
+});
+```
+
+`register` and `refresh` are plain `(Request) => Promise<Response>` functions.
+Route them at your two DBSC endpoints, and set the header from
+`await dbsc.registrationHeader()` on your sign-in response. That is the whole
+integration. See the [demo server](./demo/server.mjs) for a complete example in
+one file.
+
+## Framework adapters
+
+| Framework | Import | Recipe |
+|---|---|---|
+| Express / node:http | `dbsc-server/express` | [recipe](./docs/recipes/express.md) |
+| Hono | `dbsc-server/hono` | [recipe](./docs/recipes/hono.md) |
+| Next.js (App Router) | `dbsc-server/next` | [recipe](./docs/recipes/next.md) |
+| Elysia | `dbsc-server/elysia` | [recipe](./docs/recipes/elysia.md) |
+| Auth.js | core | [recipe](./docs/recipes/authjs.md) |
+
+The adapters are thin shims over one WHATWG handler layer. The package imports
+no framework code.
 
 ## Documentation
 
-Not written yet. See [SECURITY.md](./SECURITY.md) for the security policy and
-[CONTRIBUTING.md](./CONTRIBUTING.md) for the contribution policy.
+- [Security model](./docs/security-model.md) — what DBSC protects, what it does
+  not, and the design decisions in this package.
+- [Protocol gotchas](./docs/gotchas.md) — the deployment mistakes that make
+  DBSC silently do nothing, and how this package flags them.
+- [Browser support](./docs/browser-support.md) — where DBSC works today and how
+  to degrade gracefully.
+- [Test with real Chrome](./docs/chrome-testing.md) — no TPM required.
+- [Interoperability](./docs/interop.md) — shared test vectors with other
+  implementations.
+- [Storage recipes](./docs/recipes/storage.md) — Postgres/Drizzle and Redis
+  store implementations to copy.
+
+## Spec version
+
+This package tracks the [W3C editor's draft](https://w3c.github.io/webappsec-dbsc/).
+
+| Item | Value |
+|---|---|
+| Header names | Second origin trial (`Secure-Session-*`), the form GA Chrome ships |
+| Legacy names | `Sec-Session-*` accepted on inbound requests (configurable) |
+| Last validated | 2026-08-19, against Chrome with software keys |
+
+## Contributing and security
+
+Issues are welcome; the project does not accept unsolicited pull requests. See
+[CONTRIBUTING.md](./CONTRIBUTING.md). Report vulnerabilities per
+[SECURITY.md](./SECURITY.md); do not open a public issue.
 
 ## License
 
