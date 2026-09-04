@@ -1,6 +1,6 @@
 {
   "name": "dbsc-server",
-  "version": "0.0.0",
+  "version": "1.0.0-rc.1",
   "description": "Server-side toolkit for Device Bound Session Credentials (DBSC)",
   "license": "MIT",
   "author": "Enda Kelly (https://cloudnua.com)",
