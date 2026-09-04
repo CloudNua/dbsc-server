@@ -1,9 +1,10 @@
 name: Release
 
-# Manual publish workflow. This release uses the one-time NPM_TOKEN path with
-# an explicit --provenance flag. After the first publish, the workflow moves to
-# trusted publishing (OIDC): the token env goes away and provenance becomes
-# automatic. Provenance requires the id-token permission and a public repo.
+# Publishes via npm trusted publishing (OIDC). No token: npm trusts this
+# workflow directly, and provenance is generated automatically. Requirements:
+# id-token permission, registry-url configured, npm CLI 11.5.1 or later, and
+# the trusted publisher configured on the npm package settings for this repo
+# and workflow filename.
 
 on:
   workflow_dispatch:
@@ -21,8 +22,11 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-          cache: npm
           registry-url: https://registry.npmjs.org
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
       - run: npm ci
       - run: npm run typecheck
       - run: npm run check:zero-deps
@@ -36,6 +40,4 @@ jobs:
           TAG=latest
           case "$VERSION" in *-*) TAG=next ;; esac
           echo "publishing $VERSION with dist-tag $TAG"
-          npm publish --provenance --access public --tag "$TAG"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm publish --access public --tag "$TAG"

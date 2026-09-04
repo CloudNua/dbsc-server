@@ -1,6 +1,6 @@
 {
   "name": "dbsc-server",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Server-side toolkit for Device Bound Session Credentials (DBSC)",
   "license": "MIT",
   "author": "Enda Kelly (https://cloudnua.com)",
@@ -63,7 +63,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "check:zero-deps": "node scripts/check-zero-deps.mjs",
-    "lint": "oxlint src tests scripts"
+    "lint": "oxlint src tests scripts",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@nestjs/common": "^11.2.1",
