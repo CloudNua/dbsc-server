@@ -29,25 +29,11 @@ Runs on Node.js, Bun, and Deno.
 
 ## How it works
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant S as Your server
-    B->>S: POST /login
-    S->>B: Set-Cookie (short-lived) + Secure-Session-Registration
-    Note over B: generates a hardware-bound key
-    B->>S: POST /dbsc/register (signed proof + public key)
-    S->>B: 200 session config + Set-Cookie
-    Note over B: ...cookie expires...
-    B->>S: POST /dbsc/refresh (session id)
-    S->>B: 403 + Secure-Session-Challenge
-    B->>S: POST /dbsc/refresh (signed challenge)
-    S->>B: 200 session config + fresh Set-Cookie
-```
+<img src="https://raw.githubusercontent.com/CloudNua/dbsc-server/main/docs/assets/dbsc-flow.png" alt="DBSC flow: sign-in triggers key registration; when the short-lived cookie expires, the browser refreshes it through a 403 challenge signed by the device key" width="440">
 
 For the complete lifecycle across the browser, the secure hardware, the
 server, and the session store, see the
-[end-to-end sequence diagram](./docs/technical/README.md).
+[end-to-end sequence diagram](https://github.com/CloudNua/dbsc-server/blob/main/docs/technical/README.md).
 
 ## Install
 
