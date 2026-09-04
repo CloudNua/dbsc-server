@@ -92,6 +92,27 @@ one file.
 The adapters are thin shims over one WHATWG handler layer. The package imports
 no framework code.
 
+## Scope, and how it compares
+
+This package implements the DBSC standard, the whole standard, and nothing
+else. Some capabilities are absent on purpose:
+
+| Capability | Here? | Why, and where to look instead |
+|---|---|---|
+| Native DBSC (registration, 403 refresh, termination, skipped, well-known) | Yes | The whole point. Validated against real Chrome and shared cross-implementation vectors. |
+| Zero runtime dependencies, Web Crypto only | Yes | Runs unchanged on Node.js, Bun, and Deno. Nothing to audit but this package. |
+| Software-key fallback for browsers without DBSC | No, on purpose | Not part of the standard, and without secure hardware the binding is a different, weaker property. [dbsc-toolkit](https://github.com/SulimanAbdulrazzaq/dbsc-toolkit) offers one if you want it. |
+| DPoP (RFC 9449) for API tokens | No, on purpose | A different layer: DPoP binds bearer tokens, DBSC binds cookies. Use a DPoP library beside this one. |
+| Shipped storage adapters | No, on purpose | You implement one small interface over your own database. [Recipes](./docs/recipes/storage.md) included. Shipped adapters rot; interfaces do not. |
+
+Related implementations, all cross-validating against the same
+[shared test vectors](./docs/interop.md): [dbsc-toolkit](https://github.com/SulimanAbdulrazzaq/dbsc-toolkit)
+(broader scope: polyfills, DPoP, more adapters),
+[dbsc-php](https://github.com/report-uri/dbsc-php) (native-only PHP, extracted
+from Report URI's production deployment), and
+[@1auth/session-dbsc](https://github.com/willfarrell/1auth) (part of the 1auth
+framework). Pick by stack and philosophy; interoperability is shared work.
+
 ## Documentation
 
 - [End-to-end sequence diagram](./docs/technical/README.md): the full
