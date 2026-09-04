@@ -45,6 +45,10 @@ sequenceDiagram
     S->>B: 200 session config + fresh Set-Cookie
 ```
 
+For the complete lifecycle across the browser, the secure hardware, the
+server, and the session store, see the
+[end-to-end sequence diagram](./docs/technical/README.md).
+
 ## Install
 
 ```sh
@@ -90,6 +94,8 @@ no framework code.
 
 ## Documentation
 
+- [End-to-end sequence diagram](./docs/technical/README.md): the full
+  lifecycle in one picture, with a step-to-API map.
 - [Security model](./docs/security-model.md): what DBSC protects, what it does
   not, and the design decisions in this package.
 - [Protocol gotchas](./docs/gotchas.md): the deployment mistakes that make
