@@ -29,6 +29,13 @@ jobs:
       - run: npm run build
       - run: npm test
       - name: Publish
-        run: npm publish --provenance --access public
+        # Prereleases go to the "next" dist-tag so `npm install dbsc-server`
+        # never resolves to an rc. Stable versions go to "latest".
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=latest
+          case "$VERSION" in *-*) TAG=next ;; esac
+          echo "publishing $VERSION with dist-tag $TAG"
+          npm publish --provenance --access public --tag "$TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
